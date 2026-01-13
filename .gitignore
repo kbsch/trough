@@ -1,0 +1,57 @@
+# Binaries
+/trough
+/cmd/api/api
+/cmd/cli/cli
+/cmd/scraper/scraper
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies (if vendored)
+# /vendor/
+
+# Build output
+/dist/
+/build/
+
+# Frontend
+web/node_modules/
+web/.svelte-kit/
+web/build/
+web/.env
+web/.env.local
+
+# Logs
+*.log
+logs/
+
+# Temp files
+tmp/
+temp/

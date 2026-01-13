@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS river_queue;
+DROP TABLE IF EXISTS river_leader;
+DROP TABLE IF EXISTS river_job;

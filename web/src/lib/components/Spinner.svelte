@@ -1,0 +1,39 @@
+<script lang="ts">
+	export let size: 'sm' | 'md' | 'lg' = 'md';
+</script>
+
+<div class="spinner {size}"></div>
+
+<style>
+	.spinner {
+		border-radius: 50%;
+		border-style: solid;
+		border-color: var(--color-primary);
+		border-top-color: transparent;
+		animation: spin 0.8s linear infinite;
+	}
+
+	.sm {
+		width: 16px;
+		height: 16px;
+		border-width: 2px;
+	}
+
+	.md {
+		width: 32px;
+		height: 32px;
+		border-width: 3px;
+	}
+
+	.lg {
+		width: 48px;
+		height: 48px;
+		border-width: 4px;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

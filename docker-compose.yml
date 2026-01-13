@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: trough-postgres
+    environment:
+      POSTGRES_USER: trough
+      POSTGRES_PASSWORD: trough
+      POSTGRES_DB: trough
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trough -d trough"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trough-api
+    environment:
+      DATABASE_URL: postgres://trough:trough@postgres:5432/trough?sslmode=disable
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trough-scraper
+    environment:
+      DATABASE_URL: postgres://trough:trough@postgres:5432/trough?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["/app/scraper"]
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: dev
+    container_name: trough-web
+    environment:
+      PUBLIC_API_URL: http://localhost:8080
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+volumes:
+  postgres_data:
