@@ -34,7 +34,7 @@ services:
   scraper:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.scraper
     container_name: trough-scraper
     environment:
       DATABASE_URL: postgres://trough:trough@postgres:5432/trough?sslmode=disable
@@ -43,6 +43,10 @@ services:
         condition: service_healthy
     command: ["/app/scraper"]
     restart: unless-stopped
+    # Additional security settings for Chromium
+    security_opt:
+      - seccomp:unconfined
+    shm_size: '2gb'
 
   web:
     build:

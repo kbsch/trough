@@ -1,0 +1,54 @@
+# Build stage
+FROM golang:alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates
+
+# Copy go mod files
+COPY go.mod go.sum* ./
+RUN GOTOOLCHAIN=auto go mod download
+
+# Copy source
+COPY . .
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/bin/cli ./cmd/cli
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/bin/scraper ./cmd/scraper
+
+# Runtime stage with Chromium for headless browser
+FROM alpine:3.19
+
+WORKDIR /app
+
+# Install Chromium and dependencies for headless browser
+RUN apk add --no-cache \
+    ca-certificates \
+    tzdata \
+    chromium \
+    chromium-chromedriver \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    font-noto-emoji \
+    && rm -rf /var/cache/apk/*
+
+# Set Chromium environment variables for Rod
+ENV CHROME_PATH=/usr/bin/chromium-browser
+ENV ROD_BROWSER_PATH=/usr/bin/chromium-browser
+
+# Copy binaries
+COPY --from=builder /app/bin/cli /app/cli
+COPY --from=builder /app/bin/scraper /app/scraper
+COPY --from=builder /app/migrations /app/migrations
+
+# Create non-root user with home directory (needed for Chrome)
+RUN adduser -D -g '' appuser && \
+    mkdir -p /home/appuser/.config/chromium && \
+    chown -R appuser:appuser /home/appuser
+
+USER appuser
+
+CMD ["/app/scraper"]

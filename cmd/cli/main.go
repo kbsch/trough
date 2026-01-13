@@ -70,6 +70,7 @@ func main() {
 func scrapeCmd() *cobra.Command {
 	var sourceSlug string
 	var limit int
+	var useRod bool
 
 	cmd := &cobra.Command{
 		Use:   "scrape",
@@ -86,7 +87,21 @@ func scrapeCmd() *cobra.Command {
 			listingRepo := repository.NewListingRepository(db)
 
 			eng := engine.NewEngine(sourceRepo, listingRepo)
-			eng.RegisterScraper("bizbuysell", sources.NewBizBuySellScraper())
+
+			// Register scrapers based on mode
+			if useRod {
+				log.Println("Using Rod (headless Chrome) for scraping...")
+				bizScraper, err := sources.NewBizBuySellRodScraper()
+				if err != nil {
+					return fmt.Errorf("failed to create Rod scraper: %w", err)
+				}
+				defer bizScraper.Close()
+				eng.RegisterScraper("bizbuysell", bizScraper)
+			} else {
+				eng.RegisterScraper("bizbuysell", sources.NewBizBuySellScraper())
+			}
+
+			// Other scrapers (still using Colly for now)
 			eng.RegisterScraper("bizquest", sources.NewBizQuestScraper())
 			eng.RegisterScraper("businessbroker", sources.NewBusinessBrokerScraper())
 			eng.RegisterScraper("sunbelt", sources.NewSunbeltScraper())
@@ -104,6 +119,7 @@ func scrapeCmd() *cobra.Command {
 	}
 	runCmd.Flags().StringVarP(&sourceSlug, "source", "s", "", "Source slug to scrape (empty for all)")
 	runCmd.Flags().IntVarP(&limit, "limit", "l", 0, "Limit number of listings (0 for unlimited)")
+	runCmd.Flags().BoolVar(&useRod, "headless", true, "Use headless Chrome for scraping (default: true)")
 
 	listCmd := &cobra.Command{
 		Use:   "list",
