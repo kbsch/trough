@@ -151,13 +151,13 @@ func (s *BusinessBrokerScraper) parseListingCard(e *colly.HTMLElement) *domain.L
 		ExternalID: externalID,
 		URL:        fullURL,
 		Title:      title,
-		Country:    "US",
+		Country:    domain.StrPtr("US"),
 		IsActive:   true,
 	}
 
 	// Description
 	if desc := strings.TrimSpace(e.ChildText(".description, .listing-description, p")); desc != "" {
-		listing.Description = desc
+		listing.Description = &desc
 	}
 
 	// Price
@@ -182,23 +182,27 @@ func (s *BusinessBrokerScraper) parseListingCard(e *colly.HTMLElement) *domain.L
 	location := strings.TrimSpace(e.ChildText(".location, .city-state"))
 	if location != "" {
 		city, state := parseLocation(location)
-		listing.City = city
-		listing.State = state
+		if city != "" {
+			listing.City = &city
+		}
+		if state != "" {
+			listing.State = &state
+		}
 	}
 
 	// Industry
 	if industry := strings.TrimSpace(e.ChildText(".category, .industry")); industry != "" {
-		listing.Industry = industry
+		listing.Industry = &industry
 	}
 
 	// Franchise check
 	if strings.Contains(strings.ToLower(e.Text), "franchise") {
-		listing.IsFranchise = true
+		listing.IsFranchise = domain.BoolPtr(true)
 	}
 
 	// Real estate check
 	if strings.Contains(strings.ToLower(e.Text), "real estate") {
-		listing.RealEstateIncluded = true
+		listing.RealEstateIncluded = domain.BoolPtr(true)
 	}
 
 	rawData := map[string]interface{}{

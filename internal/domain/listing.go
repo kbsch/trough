@@ -7,6 +7,11 @@ import (
 	"github.com/google/uuid"
 )
 
+// Pointer helpers for nullable fields
+func Ptr[T any](v T) *T { return &v }
+func StrPtr(s string) *string { return &s }
+func BoolPtr(b bool) *bool { return &b }
+
 type Listing struct {
 	ID         uuid.UUID `json:"id" db:"id"`
 	SourceID   uuid.UUID `json:"source_id" db:"source_id"`
@@ -14,41 +19,41 @@ type Listing struct {
 	URL        string    `json:"url" db:"url"`
 
 	// Core fields
-	Title       string `json:"title" db:"title"`
-	Description string `json:"description,omitempty" db:"description"`
-	AskingPrice *int64 `json:"asking_price,omitempty" db:"asking_price"` // cents
-	Revenue     *int64 `json:"revenue,omitempty" db:"revenue"`           // cents, annual
-	CashFlow    *int64 `json:"cash_flow,omitempty" db:"cash_flow"`       // cents, annual (SDE/EBITDA)
-	EBITDA      *int64 `json:"ebitda,omitempty" db:"ebitda"`             // cents
-	Inventory   *int64 `json:"inventory_value,omitempty" db:"inventory_value"`
+	Title       string  `json:"title" db:"title"`
+	Description *string `json:"description,omitempty" db:"description"`
+	AskingPrice *int64  `json:"asking_price,omitempty" db:"asking_price"` // cents
+	Revenue     *int64  `json:"revenue,omitempty" db:"revenue"`           // cents, annual
+	CashFlow    *int64  `json:"cash_flow,omitempty" db:"cash_flow"`       // cents, annual (SDE/EBITDA)
+	EBITDA      *int64  `json:"ebitda,omitempty" db:"ebitda"`             // cents
+	Inventory   *int64  `json:"inventory_value,omitempty" db:"inventory_value"`
 
 	// Real estate
-	RealEstateIncluded bool   `json:"real_estate_included" db:"real_estate_included"`
+	RealEstateIncluded *bool  `json:"real_estate_included" db:"real_estate_included"`
 	RealEstateValue    *int64 `json:"real_estate_value,omitempty" db:"real_estate_value"`
 
 	// Location
-	City     string   `json:"city,omitempty" db:"city"`
-	State    string   `json:"state,omitempty" db:"state"`
-	ZipCode  string   `json:"zip_code,omitempty" db:"zip_code"`
-	Country  string   `json:"country" db:"country"`
-	Lat      *float64 `json:"lat,omitempty" db:"lat"`
-	Lng      *float64 `json:"lng,omitempty" db:"lng"`
+	City    *string  `json:"city,omitempty" db:"city"`
+	State   *string  `json:"state,omitempty" db:"state"`
+	ZipCode *string  `json:"zip_code,omitempty" db:"zip_code"`
+	Country *string  `json:"country" db:"country"`
+	Lat     *float64 `json:"lat,omitempty" db:"lat"`
+	Lng     *float64 `json:"lng,omitempty" db:"lng"`
 
 	// Business details
-	Industry         string `json:"industry,omitempty" db:"industry"`
-	IndustryCategory string `json:"industry_category,omitempty" db:"industry_category"`
-	BusinessType     string `json:"business_type,omitempty" db:"business_type"`
-	YearEstablished  *int   `json:"year_established,omitempty" db:"year_established"`
-	Employees        *int   `json:"employees,omitempty" db:"employees"`
-	ReasonForSale    string `json:"reason_for_sale,omitempty" db:"reason_for_sale"`
+	Industry         *string `json:"industry,omitempty" db:"industry"`
+	IndustryCategory *string `json:"industry_category,omitempty" db:"industry_category"`
+	BusinessType     *string `json:"business_type,omitempty" db:"business_type"`
+	YearEstablished  *int    `json:"year_established,omitempty" db:"year_established"`
+	Employees        *int    `json:"employees,omitempty" db:"employees"`
+	ReasonForSale    *string `json:"reason_for_sale,omitempty" db:"reason_for_sale"`
 
 	// Lease
 	LeaseExpiration *time.Time `json:"lease_expiration,omitempty" db:"lease_expiration"`
 	MonthlyRent     *int64     `json:"monthly_rent,omitempty" db:"monthly_rent"`
 
 	// Franchise
-	IsFranchise   bool   `json:"is_franchise" db:"is_franchise"`
-	FranchiseName string `json:"franchise_name,omitempty" db:"franchise_name"`
+	IsFranchise   *bool   `json:"is_franchise" db:"is_franchise"`
+	FranchiseName *string `json:"franchise_name,omitempty" db:"franchise_name"`
 
 	// Raw data
 	RawData json.RawMessage `json:"raw_data,omitempty" db:"raw_data"`

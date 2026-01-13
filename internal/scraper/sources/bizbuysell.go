@@ -187,14 +187,14 @@ func (s *BizBuySellScraper) parseListingCard(e *colly.HTMLElement) *domain.Listi
 		ExternalID: externalID,
 		URL:        fullURL,
 		Title:      title,
-		Country:    "US",
+		Country:    domain.StrPtr("US"),
 		IsActive:   true,
 	}
 
 	// Parse description
 	desc := strings.TrimSpace(e.ChildText(".listing-description, .description, p.desc"))
 	if desc != "" {
-		listing.Description = desc
+		listing.Description = &desc
 	}
 
 	// Parse price - try multiple selectors
@@ -219,25 +219,29 @@ func (s *BizBuySellScraper) parseListingCard(e *colly.HTMLElement) *domain.Listi
 	location := strings.TrimSpace(e.ChildText(".location, .listing-location, .city-state"))
 	if location != "" {
 		city, state := parseLocation(location)
-		listing.City = city
-		listing.State = state
+		if city != "" {
+			listing.City = &city
+		}
+		if state != "" {
+			listing.State = &state
+		}
 	}
 
 	// Parse industry/category
 	industry := strings.TrimSpace(e.ChildText(".category, .industry, .listing-category"))
 	if industry != "" {
-		listing.Industry = industry
+		listing.Industry = &industry
 	}
 
 	// Check for franchise
 	if strings.Contains(strings.ToLower(e.Text), "franchise") {
-		listing.IsFranchise = true
+		listing.IsFranchise = domain.BoolPtr(true)
 	}
 
 	// Check for real estate
 	if strings.Contains(strings.ToLower(e.Text), "real estate included") ||
 		strings.Contains(strings.ToLower(e.Text), "includes real estate") {
-		listing.RealEstateIncluded = true
+		listing.RealEstateIncluded = domain.BoolPtr(true)
 	}
 
 	// Store raw HTML for debugging
@@ -278,7 +282,7 @@ func (s *BizBuySellScraper) parseDataListing(e *colly.HTMLElement) *domain.Listi
 		ExternalID: listingID,
 		URL:        fullURL,
 		Title:      title,
-		Country:    "US",
+		Country:    domain.StrPtr("US"),
 		IsActive:   true,
 	}
 
@@ -297,12 +301,16 @@ func (s *BizBuySellScraper) parseDataListing(e *colly.HTMLElement) *domain.Listi
 
 	if loc := e.Attr("data-location"); loc != "" {
 		city, state := parseLocation(loc)
-		listing.City = city
-		listing.State = state
+		if city != "" {
+			listing.City = &city
+		}
+		if state != "" {
+			listing.State = &state
+		}
 	}
 
 	if industry := e.Attr("data-category"); industry != "" {
-		listing.Industry = industry
+		listing.Industry = &industry
 	}
 
 	return listing

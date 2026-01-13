@@ -152,13 +152,13 @@ func (s *BizQuestScraper) parseListingCard(e *colly.HTMLElement) *domain.Listing
 		ExternalID: externalID,
 		URL:        fullURL,
 		Title:      title,
-		Country:    "US",
+		Country:    domain.StrPtr("US"),
 		IsActive:   true,
 	}
 
 	// Description
 	if desc := strings.TrimSpace(e.ChildText(".listing-description, .description, p")); desc != "" {
-		listing.Description = desc
+		listing.Description = &desc
 	}
 
 	// Price
@@ -183,23 +183,27 @@ func (s *BizQuestScraper) parseListingCard(e *colly.HTMLElement) *domain.Listing
 	location := strings.TrimSpace(e.ChildText(".location, .city-state"))
 	if location != "" {
 		city, state := parseLocation(location)
-		listing.City = city
-		listing.State = state
+		if city != "" {
+			listing.City = &city
+		}
+		if state != "" {
+			listing.State = &state
+		}
 	}
 
 	// Industry
 	if industry := strings.TrimSpace(e.ChildText(".category, .industry")); industry != "" {
-		listing.Industry = industry
+		listing.Industry = &industry
 	}
 
 	// Franchise check
 	if strings.Contains(strings.ToLower(e.Text), "franchise") {
-		listing.IsFranchise = true
+		listing.IsFranchise = domain.BoolPtr(true)
 	}
 
 	// Real estate check
 	if strings.Contains(strings.ToLower(e.Text), "real estate") {
-		listing.RealEstateIncluded = true
+		listing.RealEstateIncluded = domain.BoolPtr(true)
 	}
 
 	rawData := map[string]interface{}{

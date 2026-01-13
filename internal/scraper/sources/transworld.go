@@ -194,14 +194,14 @@ func (s *TransworldScraper) parseListingCard(e *colly.HTMLElement) *domain.Listi
 		ExternalID: externalID,
 		URL:        fullURL,
 		Title:      title,
-		Country:    "US",
+		Country:    domain.StrPtr("US"),
 		IsActive:   true,
 	}
 
 	// Parse description
 	desc := strings.TrimSpace(e.ChildText(".listing-description, .description, p.summary, .business-description"))
 	if desc != "" {
-		listing.Description = desc
+		listing.Description = &desc
 	}
 
 	// Parse asking price
@@ -226,25 +226,29 @@ func (s *TransworldScraper) parseListingCard(e *colly.HTMLElement) *domain.Listi
 	location := strings.TrimSpace(e.ChildText(".location, .city-state, .listing-location, .business-location"))
 	if location != "" {
 		city, state := parseLocation(location)
-		listing.City = city
-		listing.State = state
+		if city != "" {
+			listing.City = &city
+		}
+		if state != "" {
+			listing.State = &state
+		}
 	}
 
 	// Parse industry
 	industry := strings.TrimSpace(e.ChildText(".category, .industry, .business-type, .business-category"))
 	if industry != "" {
-		listing.Industry = industry
+		listing.Industry = &industry
 	}
 
 	// Check for franchise
 	if strings.Contains(strings.ToLower(e.Text), "franchise") {
-		listing.IsFranchise = true
+		listing.IsFranchise = domain.BoolPtr(true)
 	}
 
 	// Check for real estate
 	if strings.Contains(strings.ToLower(e.Text), "real estate included") ||
 		strings.Contains(strings.ToLower(e.Text), "includes real estate") {
-		listing.RealEstateIncluded = true
+		listing.RealEstateIncluded = domain.BoolPtr(true)
 	}
 
 	rawData := map[string]interface{}{
@@ -290,7 +294,7 @@ func (s *TransworldScraper) parseBusinessCard(e *colly.HTMLElement) *domain.List
 		ExternalID: "tw-" + listingID,
 		URL:        fullURL,
 		Title:      title,
-		Country:    "US",
+		Country:    domain.StrPtr("US"),
 		IsActive:   true,
 	}
 
@@ -303,12 +307,16 @@ func (s *TransworldScraper) parseBusinessCard(e *colly.HTMLElement) *domain.List
 
 	if loc := e.Attr("data-location"); loc != "" {
 		city, state := parseLocation(loc)
-		listing.City = city
-		listing.State = state
+		if city != "" {
+			listing.City = &city
+		}
+		if state != "" {
+			listing.State = &state
+		}
 	}
 
 	if industry := e.Attr("data-category"); industry != "" {
-		listing.Industry = industry
+		listing.Industry = &industry
 	}
 
 	return listing

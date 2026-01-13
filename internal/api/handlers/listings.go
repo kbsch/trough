@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,6 +27,7 @@ func (h *ListingHandler) Search(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.repo.Search(ctx, params)
 	if err != nil {
+		log.Printf("Search error: %v", err)
 		InternalError(w, r, "Failed to search listings")
 		return
 	}
@@ -69,16 +71,23 @@ func (h *ListingHandler) MapView(w http.ResponseWriter, r *http.Request) {
 	markers := make([]MapMarker, 0, len(result.Listings))
 	for _, l := range result.Listings {
 		if l.Lat != nil && l.Lng != nil {
-			markers = append(markers, MapMarker{
+			marker := MapMarker{
 				ID:          l.ID,
 				Lat:         *l.Lat,
 				Lng:         *l.Lng,
 				Title:       l.Title,
 				AskingPrice: l.AskingPrice,
-				Industry:    l.Industry,
-				City:        l.City,
-				State:       l.State,
-			})
+			}
+			if l.Industry != nil {
+				marker.Industry = *l.Industry
+			}
+			if l.City != nil {
+				marker.City = *l.City
+			}
+			if l.State != nil {
+				marker.State = *l.State
+			}
+			markers = append(markers, marker)
 		}
 	}
 

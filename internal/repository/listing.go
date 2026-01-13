@@ -19,11 +19,18 @@ func NewListingRepository(db *sqlx.DB) *ListingRepository {
 	return &ListingRepository{db: db}
 }
 
+const listingColumns = `id, source_id, external_id, url, title, description,
+	asking_price, revenue, cash_flow, ebitda, inventory_value,
+	real_estate_included, real_estate_value,
+	city, state, zip_code, country, lat, lng,
+	industry, industry_category, business_type, year_established, employees, reason_for_sale,
+	lease_expiration, monthly_rent, is_franchise, franchise_name,
+	raw_data, first_seen_at, last_seen_at, is_active`
+
 func (r *ListingRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Listing, error) {
 	var listing domain.Listing
-	err := r.db.GetContext(ctx, &listing, `
-		SELECT * FROM listings WHERE id = $1 AND is_active = true
-	`, id)
+	query := fmt.Sprintf(`SELECT %s FROM listings WHERE id = $1 AND is_active = true`, listingColumns)
+	err := r.db.GetContext(ctx, &listing, query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -127,11 +134,11 @@ func (r *ListingRepository) Search(ctx context.Context, params domain.ListingSea
 	// Main query with pagination
 	offset := (params.Page - 1) * params.PerPage
 	query := fmt.Sprintf(`
-		SELECT * FROM listings
+		SELECT %s FROM listings
 		WHERE %s
 		ORDER BY %s
 		LIMIT $%d OFFSET $%d
-	`, whereClause, orderBy, argIdx, argIdx+1)
+	`, listingColumns, whereClause, orderBy, argIdx, argIdx+1)
 	args = append(args, params.PerPage, offset)
 
 	var listings []domain.Listing
